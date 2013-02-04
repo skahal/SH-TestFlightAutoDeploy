@@ -6,11 +6,14 @@ A simple and easy to use Unity editor script to auto deploy your iOS game to Tes
 Requirements
 -------
 1. Unity iOS free or pro
-2. Xcode
-	2.1. You should have this tools already installed in your Mac, but is good to check:
-		2.1.1 /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild
-		2.1.2 /Applications/Xcode.app/Contents/Developer/usr/bin/xcrun
+2. Xcode*
 3. TestFlight account
+
+
+*You should have this tools already installed in your Mac, but is good to check:
+/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild and 
+/Applications/Xcode.app/Contents/Developer/usr/bin/xcrun*
+
 
 Installation
 -------
