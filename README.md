@@ -7,9 +7,9 @@ Requirements
 -------
 1. Unity iOS free or pro
 2. Xcode
-You should have this tools already installed in your Mac, but is good to check:
-	2.1. /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild
-	2.2. /Applications/Xcode.app/Contents/Developer/usr/bin/xcrun
+	2.1. You should have this tools already installed in your Mac, but is good to check:
+		2.1.1 /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild
+		2.1.2 /Applications/Xcode.app/Contents/Developer/usr/bin/xcrun
 3. TestFlight account
 
 Installation
