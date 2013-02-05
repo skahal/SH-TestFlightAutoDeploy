@@ -73,5 +73,5 @@ Licensed under the Apache License, Version 2.0 (the "License").
 
 Change Log
 ------
-0.1 Builds and send to TestFlight. Save and load configurations by project.
-0.2 Added help box for API token and Team token fields.
+* 0.1 Builds and send to TestFlight. Save and load configurations by project.
+* 0.2 Added help box for API token and Team token fields.
