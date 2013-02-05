@@ -47,7 +47,7 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 
 		title = "TestFlight Auto Deploy";
 		autoRepaintOnSceneChange = true;
-		minSize = new Vector2 (480, 280);
+		minSize = new Vector2 (480, 340);
 		LoadPrefs ();	
 	}
 	
@@ -63,8 +63,26 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 		m_outputPath = EditorGUILayout.TextField ("Output path", m_outputPath);
 		m_sdkVersion = EditorGUILayout.TextField ("SDK version", m_sdkVersion);
 		m_autoIncrementBundleVersion = EditorGUILayout.Toggle ("Auto increment version", m_autoIncrementBundleVersion);
+		
 		m_apiToken = EditorGUILayout.TextField ("API token", m_apiToken);
+		EditorGUILayout.BeginHorizontal ();
+		EditorGUILayout.HelpBox ("Get your API token at https://testflightapp.com/account/#api", MessageType.Info, false);
+		if (GUILayout.Button ("Get")) {
+			Application.OpenURL ("https://testflightapp.com/account/#api");
+		}
+		EditorGUILayout.EndHorizontal ();
+		
+		EditorGUILayout.Space ();
+		
 		m_teamToken = EditorGUILayout.TextField ("Team token", m_teamToken);
+		EditorGUILayout.BeginHorizontal ();
+		EditorGUILayout.HelpBox ("Get your Team Token at  https://testflightapp.com/dashboard/team/edit/", MessageType.Info, false);
+		if (GUILayout.Button ("Get")) {
+			Application.OpenURL ("https://testflightapp.com/dashboard/team/edit/");
+		}
+		EditorGUILayout.EndHorizontal ();
+		
+		
 		EditorGUILayout.LabelField ("Notes");
 		m_notes = EditorGUILayout.TextArea (m_notes, GUILayout.Height (50));
 		m_notify = EditorGUILayout.Toggle ("Notify", m_notify);
