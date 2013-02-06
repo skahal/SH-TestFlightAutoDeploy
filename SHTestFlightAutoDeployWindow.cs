@@ -34,6 +34,8 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 	private string m_notes;
 	private bool m_notify;
 	private string m_distributionLists;
+	private string m_log = string.Empty;
+	private Vector2 m_logScroll;
 	#endregion
 	
 	#region Constructors
@@ -47,13 +49,13 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 
 		title = "TestFlight Auto Deploy";
 		autoRepaintOnSceneChange = true;
-		minSize = new Vector2 (480, 340);
+		minSize = new Vector2 (480, 440);
 		LoadPrefs ();	
 	}
 	
 	#endregion
 	
-	#region Methods	
+	#region UI	
 	/// <summary>
 	/// Draws the window's GUI.
 	/// </summary>
@@ -65,23 +67,12 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 		m_autoIncrementBundleVersion = EditorGUILayout.Toggle ("Auto increment version", m_autoIncrementBundleVersion);
 		
 		m_apiToken = EditorGUILayout.TextField ("API token", m_apiToken);
-		EditorGUILayout.BeginHorizontal ();
-		EditorGUILayout.HelpBox ("Get your API token at https://testflightapp.com/account/#api", MessageType.Info, false);
-		if (GUILayout.Button ("Get")) {
-			Application.OpenURL ("https://testflightapp.com/account/#api");
-		}
-		EditorGUILayout.EndHorizontal ();
+		CreateHelpBox ("Get your API token at https://testflightapp.com/account/#api", "https://testflightapp.com/account/#api");
 		
 		EditorGUILayout.Space ();
 		
 		m_teamToken = EditorGUILayout.TextField ("Team token", m_teamToken);
-		EditorGUILayout.BeginHorizontal ();
-		EditorGUILayout.HelpBox ("Get your Team Token at  https://testflightapp.com/dashboard/team/edit/", MessageType.Info, false);
-		if (GUILayout.Button ("Get")) {
-			Application.OpenURL ("https://testflightapp.com/dashboard/team/edit/");
-		}
-		EditorGUILayout.EndHorizontal ();
-		
+		CreateHelpBox ("Get your Team Token at https://testflightapp.com/dashboard/team/edit/", "https://testflightapp.com/dashboard/team/edit/");
 		
 		EditorGUILayout.LabelField ("Notes");
 		m_notes = EditorGUILayout.TextArea (m_notes, GUILayout.Height (50));
@@ -92,22 +83,63 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 			SavePrefs ();
 			PublishToTestFlight ();
 		}
-	}
-	
-	private void PublishToTestFlight ()
-	{
-		BuildPlayer ();
-		BuildXcodeProject ();		
-		BuildIpa ();
-		SendToTestFlight ();
 		
-		EditorUtility.ClearProgressBar();
-		ShowStatus ("Done.");
+		m_logScroll = EditorGUILayout.BeginScrollView (m_logScroll, GUILayout.Height (100));  
 		
-		EditorGUIUtility.ExitGUI ();	
+		var height = GUIStyle.none.CalcHeight (new GUIContent (m_log), minSize.x);
+		height = height < 100 ? 100 : height; 
+		EditorGUILayout.TextArea (m_log, GUILayout.Height (height));        
+		EditorGUILayout.EndScrollView ();
 	}
 
-	private void BuildPlayer ()
+	private void CreateHelpBox (string helpText, string url = null)
+	{
+		EditorGUILayout.BeginHorizontal ();
+		EditorGUILayout.HelpBox (helpText, MessageType.Info, false);
+		
+		if (!string.IsNullOrEmpty (url) && GUILayout.Button ("Get")) {
+			Application.OpenURL (url);
+		}
+		
+		EditorGUILayout.EndHorizontal ();	
+	}
+	
+	private void ShowStatus (string text)
+	{
+		ShowNotification (new GUIContent (text));
+	}
+	
+	private void OnLostFocus ()
+	{
+		SavePrefs ();
+	}
+	
+	private void OnDestroy ()
+	{
+		SavePrefs ();
+	}
+	#endregion
+	
+	#region Publish steps
+	private void PublishToTestFlight ()
+	{
+		m_log = string.Empty;
+		
+		if (BuildPlayer ()
+		&& BuildXcodeProject ()		
+		&& BuildIpa ()
+		&& SendToTestFlight ()) {
+			ShowStatus ("Done.");
+			m_log = string.Format("Done at {0:dd/MM/yyyy HH:mm:ss}.", System.DateTime.Now);
+		}
+		else {
+			ShowStatus ("ERROR.");
+		}
+
+		EditorUtility.ClearProgressBar ();
+	}
+
+	private bool BuildPlayer ()
 	{
 		EditorUtility.DisplayProgressBar (title, "Building player...", 0.1f);
 	
@@ -136,20 +168,24 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 		}
 		
 		BuildPipeline.BuildPlayer (scenes.ToArray (), m_outputPath, BuildTarget.iPhone, BuildOptions.None);
+		
+		return true;
 	}
 
-	private void BuildXcodeProject ()
+	private bool BuildXcodeProject ()
 	{
-		Run ("Building Xcode project...", 
+		return Run ("Building Xcode project...", 
+			true,
 			0.25f, 0.5f,
 			"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild", 
-			"-target Unity-iPhone -sdk {0} -configuration Release", 
+			"-target Unity-iPhone -sdk {0} -configuration Release",
 			m_sdkVersion);
 	}
 	
-	private void BuildIpa ()
+	private bool BuildIpa ()
 	{
-		Run ("Building .IPA...",
+		return Run ("Building .IPA...",
+			true,
 			0.5f, 0.75f,
 			"/Applications/Xcode.app/Contents/Developer/usr/bin/xcrun", 
 			"-sdk iphoneos PackageApplication -v build/{0}.app -o {1}/build/{0}.ipa", 
@@ -157,9 +193,10 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 			m_outputPath);
 	}
 
-	private void SendToTestFlight ()
+	private bool SendToTestFlight ()
 	{
-		Run ("Sending to TestFlight ...",
+		return Run ("Sending to TestFlight ...",
+			false,
 			0.75f,
 			1f,
 			"curl", 
@@ -173,14 +210,45 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 			m_distributionLists);
 	}
 	
-	private void OnLostFocus ()
+	private bool Run (string runTitle, bool testErrorOutput, float fromProgress, float toProgress, string command, string argsFormat, params object[] args)
 	{
-		SavePrefs ();
-	}
-	
-	private void OnDestroy ()
-	{
-		SavePrefs ();
+		EditorUtility.DisplayProgressBar (title, runTitle, fromProgress);
+		
+		var ps = new System.Diagnostics.Process ();	
+		var argsFormatted = string.Format (argsFormat, args);
+		ps.StartInfo = new ProcessStartInfo (command, argsFormatted);
+		ps.StartInfo.WorkingDirectory = m_outputPath;
+		ps.StartInfo.RedirectStandardOutput = true;
+		ps.StartInfo.RedirectStandardError = true;
+		ps.StartInfo.UseShellExecute = false;
+		ps.Start ();
+		
+		while (true) {		
+			byte[] buffer = new byte[256];
+			var ar = ps.StandardOutput.BaseStream.BeginRead (buffer, 0, 256, null, null);
+			ar.AsyncWaitHandle.WaitOne ();
+			var bytesRead = ps.StandardOutput.BaseStream.EndRead (ar);
+			if (bytesRead > 0) {
+				if (fromProgress < toProgress) {
+					fromProgress += 0.00005f;
+					EditorUtility.DisplayProgressBar (title, runTitle, fromProgress);
+				}
+			}
+			else {
+				ps.WaitForExit ();
+				break;
+			}
+		}	
+		
+		m_log = ps.StandardError.ReadToEnd ();
+		
+		if (string.IsNullOrEmpty (m_log) || !testErrorOutput) {
+			return true;
+		}
+		else {
+			m_log = string.Format ("Error executing {0}\n\nCOMMAND: {1} {2}\nERROR: {3}", runTitle, command, argsFormatted, m_log);
+			return false;
+		}	
 	}
 	#endregion
 	
@@ -235,39 +303,6 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 		SetString("notes", m_notes);
 		SetBool("notify", m_notify);
 		SetString("distributionLists", m_distributionLists);
-	}
-	
-	private void ShowStatus (string text)
-	{
-		ShowNotification (new GUIContent (text));
-	}
-	
-	private void Run (string runTitle, float fromProgress, float toProgress, string command, string argsFormat, params object[] args)
-	{
-		EditorUtility.DisplayProgressBar (title, runTitle, fromProgress);
-		
-		var ps = new System.Diagnostics.Process ();	
-		var argsFormatted = string.Format (argsFormat, args);
-		ps.StartInfo = new ProcessStartInfo (command, argsFormatted);
-		ps.StartInfo.WorkingDirectory = m_outputPath;
-		ps.StartInfo.RedirectStandardOutput = true;
-		ps.StartInfo.UseShellExecute = false;
-		ps.Start ();
-		while (true) {		
-			byte[] buffer = new byte[256];
-			var ar = ps.StandardOutput.BaseStream.BeginRead (buffer, 0, 256, null, null);
-			ar.AsyncWaitHandle.WaitOne ();
-			var bytesRead = ps.StandardOutput.BaseStream.EndRead (ar);
-			if (bytesRead > 0) {
-				if (fromProgress < toProgress) {
-					fromProgress += 0.00005f;
-					EditorUtility.DisplayProgressBar (title, runTitle, fromProgress);
-				}
-			} else {
-				ps.WaitForExit ();
-				break;
-			}
-		}	
-	}
+	}	
 	#endregion
 }

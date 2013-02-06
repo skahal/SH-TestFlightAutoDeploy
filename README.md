@@ -62,6 +62,9 @@ In the editor window "TestFlight Auto Deploy" type the informations below:
 
 **You can click "Send to TestFlight" button and wait for the process end (this take some minutes).**
 
+Know issues
+------
+* Every pluging that needs add some files to Xcode project needs a <a href="https://bitbucket.org/darktable/unity3d-airship-plugin/src/962a7d521793/Assets/Editor/PostprocessBuildPlayer_Airship">postprocessor</a> or you will need all .a,.m,.mm,.c,.cpp files at <a href="http://docs.unity3d.com/Documentation/Manual/PluginsForIOS.html">Assets/Plugins/iOS folder</a>.
 
 Improvements
 ------
@@ -75,3 +78,4 @@ Change Log
 ------
 * 0.1 Builds and send to TestFlight. Save and load configurations by project.
 * 0.2 Added help box for API token and Team token fields.
+* 0.3 Added log field.
