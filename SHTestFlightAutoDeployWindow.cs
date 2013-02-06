@@ -49,10 +49,9 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 
 		title = "TestFlight Auto Deploy";
 		autoRepaintOnSceneChange = true;
-		minSize = new Vector2 (480, 440);
+		minSize = new Vector2 (700, 455);
 		LoadPrefs ();	
 	}
-	
 	#endregion
 	
 	#region UI	
@@ -63,13 +62,13 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 	{
 		m_appFileName = EditorGUILayout.TextField ("App file name", m_appFileName);
 		m_outputPath = EditorGUILayout.TextField ("Output path", m_outputPath);
-		m_sdkVersion = EditorGUILayout.TextField ("SDK version", m_sdkVersion);
 		m_autoIncrementBundleVersion = EditorGUILayout.Toggle ("Auto increment version", m_autoIncrementBundleVersion);
+		
+		m_sdkVersion = EditorGUILayout.TextField ("SDK version", m_sdkVersion);
+		CreateHelpBox ("The name of SDK installed at /Applications/Xcode.app/Contents/Developer/Platforms/SDKs (without the .sdk extension)");
 		
 		m_apiToken = EditorGUILayout.TextField ("API token", m_apiToken);
 		CreateHelpBox ("Get your API token at https://testflightapp.com/account/#api", "https://testflightapp.com/account/#api");
-		
-		EditorGUILayout.Space ();
 		
 		m_teamToken = EditorGUILayout.TextField ("Team token", m_teamToken);
 		CreateHelpBox ("Get your Team Token at https://testflightapp.com/dashboard/team/edit/", "https://testflightapp.com/dashboard/team/edit/");
@@ -95,13 +94,14 @@ public class SHTestFlightAutoDeployWindow : EditorWindow
 	private void CreateHelpBox (string helpText, string url = null)
 	{
 		EditorGUILayout.BeginHorizontal ();
-		EditorGUILayout.HelpBox (helpText, MessageType.Info, false);
+		EditorGUILayout.HelpBox (helpText, MessageType.None, false);
 		
-		if (!string.IsNullOrEmpty (url) && GUILayout.Button ("Get")) {
+		if (!string.IsNullOrEmpty (url) && GUILayout.Button ("Get", GUILayout.Width(40))) {
 			Application.OpenURL (url);
 		}
 		
 		EditorGUILayout.EndHorizontal ();	
+		EditorGUILayout.Separator ();
 	}
 	
 	private void ShowStatus (string text)

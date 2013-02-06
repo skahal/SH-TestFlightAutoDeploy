@@ -64,7 +64,7 @@ In the editor window "TestFlight Auto Deploy" type the informations below:
 
 Know issues
 ------
-* Every pluging that needs add some files to Xcode project needs a <a href="https://bitbucket.org/darktable/unity3d-airship-plugin/src/962a7d521793/Assets/Editor/PostprocessBuildPlayer_Airship">postprocessor</a> or you will need all .a,.m,.mm,.c,.cpp files at <a href="http://docs.unity3d.com/Documentation/Manual/PluginsForIOS.html">Assets/Plugins/iOS folder</a>.
+* Every iOS pluging that needs add some files to Xcode project should implement a <a href="https://bitbucket.org/darktable/unity3d-airship-plugin/src/962a7d521793/Assets/Editor/PostprocessBuildPlayer_Airship">postprocessor</a> or you will add all .a,.m,.mm,.c,.cpp files at <a href="http://docs.unity3d.com/Documentation/Manual/PluginsForIOS.html">Assets/Plugins/iOS folder</a>.
 
 Improvements
 ------
